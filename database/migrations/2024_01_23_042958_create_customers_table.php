@@ -14,10 +14,11 @@ return new class extends Migration
 
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->unsignedBigInteger('main_dish_id');
             $table->unsignedBigInteger('side_dish_id');
-            $table->unsignedBigInteger('dessert_id');
-            $table->decimal('price', 8, 2);
+            $table->unsignedBigInteger('dessert_id')->nullable();
+            $table->decimal('total_price', 8, 2);
             $table->timestamps();
             
             $table->foreign('main_dish_id')->references('id')->on('main_dishes')->onDelete('cascade');
@@ -25,7 +26,7 @@ return new class extends Migration
             $table->foreign('dessert_id')->references('id')->on('desserts')->onDelete('cascade');
 
         });
-        
+
     }
 
     /**

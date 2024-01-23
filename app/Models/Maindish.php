@@ -9,6 +9,8 @@ class Maindish extends Model
 {
     use HasFactory;
 
+    protected $table = 'main_dishes';
+
     protected $fillable = [
         'id',
         'main_dish',

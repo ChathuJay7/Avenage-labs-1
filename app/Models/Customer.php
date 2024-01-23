@@ -11,9 +11,9 @@ class Customer extends Model
 
     protected $fillable = [
         'name',
-        'main_dish',
-        'side_dish',
-        'dessert',
+        'main_dish_id',
+        'side_dish_id',
+        'dessert_id',
         'total_price'
     ];
 
