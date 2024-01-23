@@ -54,4 +54,11 @@ class UserController extends Controller
 
         return redirect()->route('home')->with('success', 'Order placed successfully!');
     }
+
+    public function showOrders()
+    {
+        $orders = Customer::with(['maindish', 'sidedish', 'dessert'])->get();
+
+        return view('orders', compact('orders'));
+    }
 }

@@ -19,12 +19,12 @@ class Customer extends Model
 
     public function maindish()
     {
-        return $this->belongsTo(Maindish::class);
+        return $this->belongsTo(Maindish::class, 'main_dish_id');
     }
 
     public function sidedish()
     {
-        return $this->belongsTo(Sidedish::class);
+        return $this->belongsTo(Sidedish::class, 'side_dish_id');
     }
 
     public function dessert()
