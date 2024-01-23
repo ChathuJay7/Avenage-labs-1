@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * Display the dashboard based on the user's role.
+     * Display the place order page.
      *
      * @return \Illuminate\Contracts\View\View
      */
