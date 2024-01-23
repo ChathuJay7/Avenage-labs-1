@@ -22,3 +22,4 @@ Route::get('/', function () {
 Route::get('/', [UserController::class, 'index'])->name('home');
 Route::post('/store', [UserController::class, 'store'])->name('store.order');
 Route::get('/orders', [UserController::class, 'showOrders'])->name('show.orders');
+Route::get('/statistics', [UserController::class, 'statistics'])->name('statistics.index');

@@ -13,7 +13,8 @@
                 <th scope="col">Main Dish</th>
                 <th scope="col">Side Dish</th>
                 <th scope="col">Dessert</th>
-                <th scope="col">Total Price</th>
+                <th scope="col">Total Price (Rs)</th>
+                <th scope="col">Date</th>
             </tr>
         </thead>
         <tbody>
@@ -24,6 +25,7 @@
                     <td>{{ $order->sidedish->side_dish}}</td>
                     <td>{{ $order->dessert ? $order->dessert->dessert : 'N/A' }}</td>
                     <td>{{ $order->total_price }}</td>
+                    <td>{{ $order->created_at->format('Y-m-d') }}</td>
                 </tr>
             @endforeach
         </tbody>

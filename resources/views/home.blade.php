@@ -1,7 +1,7 @@
 @extends('main')
 @section("content")
 
-<div class="container ">
+<div class="container flex flex-column align-items-center justify-content-center">
     <div class="text-center my-5">
         <h1 class="mx-auto text-center">Place an order</h1>
     </div>
@@ -18,31 +18,46 @@
         </script>
     @endif
 
+    @if(isset($error))
+        <div class="alert alert-danger">
+            {{ $error }}
+        </div>
+    @endif
+
     <div class="mx-auto text-center mb-10" ><h5 id="totalPrice">Total Price: Rs. 0.00</h5></div>
 
     <form action="/store" method="post">
         @csrf
         <div class="mb-3">
             <label for="name" class="form-label">Customer Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <input type="text" class="form-control" id="name" name="name">
+            @error('name')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
         <div class="mb-3">
             <label for="main_dish" class="form-label">Main Dish</label>
-            <select class="form-select" id="main_dish" name="main_dish" required onchange="calculateTotal()">
+            <select class="form-select" id="main_dish" name="main_dish"  onchange="calculateTotal()">
                 <option value="" selected>Select Main Dish</option>
                 @foreach($mainDishes as $mainDish)
                     <option value="{{ $mainDish->id }}|{{ $mainDish->price }}" >{{ $mainDish->main_dish }}</option>
                 @endforeach
             </select>
+            @error('main_dish')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
         <div class="mb-3">
             <label for="side_dish" class="form-label">Side Dish</label>
-            <select class="form-select" id="side_dish" name="side_dish" required onchange="calculateTotal()">
+            <select class="form-select" id="side_dish" name="side_dish"  onchange="calculateTotal()">
                 <option value="" selected>Select Side Dish</option>
                 @foreach($sideDishes as $sideDish)
                     <option value="{{ $sideDish->id }}|{{ $sideDish->price }}">{{ $sideDish->side_dish }}</option>
                 @endforeach
             </select>
+            @error('side_dish')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
         <div class="mb-3">
             <label for="dessert" class="form-label">Dessert (Optional)</label>
@@ -77,7 +92,7 @@
             }
         </script>
 
-        <button type="submit" class="btn btn-primary">Submit Order</button>
+        <button type="submit" class="btn btn-primary text-center">Place Order</button>
     </form>
 
     
