@@ -9,6 +9,7 @@
     <div class="text-center mb-5">
         <div><h5>Most famouse Main dish: {{$mostFamousMainDishName}}</h5></div>
         <div><h5>Most famouse side dish: {{$mostFamousSideDishName}}</h5></div>
+        <div><h5>Most famouse side dish with most famouse Main dish: {{$mostConsumedSideDishNameWithMostConsumedMainDish}}</h5></div>
     </div>
 
     <table class="table">

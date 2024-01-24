@@ -91,11 +91,24 @@ class UserController extends Controller
             ->orderByDesc('count')
             ->first();
 
+        // Select the side dish and the count of each side dish associated with the most consumed main dish
+        $sideDishStatistics = Customer::select('side_dish_id', DB::raw('count(*) as count'))
+            ->where('main_dish_id', $mostFamousMainDishFromAllRecords->main_dish_id)
+            ->groupBy('side_dish_id')
+            ->orderByDesc('count');
+
+        // Get the first (top) record for the most consumed side dish with the most consumed main dish
+        $mostConsumedSideDishWithMostConsumedSideDish = DB::table(DB::raw("({$sideDishStatistics->toSql()}) as sub"))
+            ->mergeBindings($sideDishStatistics->getQuery())
+            ->select('side_dish_id', 'count')
+            ->first();
+
         // Fetch the names of the most famous main dish and side dish
         $mostFamousMainDishName = Maindish::find($mostFamousMainDishFromAllRecords->main_dish_id)->main_dish ?? 'N/A';
         $mostFamousSideDishName = Sidedish::find($mostFamousSideDishFromAllRecords->side_dish_id)->side_dish ?? 'N/A';
+        $mostConsumedSideDishNameWithMostConsumedMainDish = Sidedish::find($mostConsumedSideDishWithMostConsumedSideDish->side_dish_id)->side_dish ?? 'N/A';
 
-        return view('statistics', compact('statistics', 'mostFamousMainDishName','mostFamousSideDishName'));
+        return view('statistics', compact('statistics', 'mostFamousMainDishName','mostFamousSideDishName','mostConsumedSideDishNameWithMostConsumedMainDish'));
         
     }
 
