@@ -33,7 +33,7 @@
         #header {
             position: sticky;
             top: 0;
-            z-index: 1000; /* Adjust the z-index as needed */
+            z-index: 1000;
         }
     </style>
 </head>

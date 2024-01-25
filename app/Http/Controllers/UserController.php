@@ -28,6 +28,11 @@ class UserController extends Controller
         return view('home', compact('mainDishes', 'sideDishes', 'desserts'));
     }
 
+    /**
+     * Handle place order function.
+     *
+     * @return \Illuminate\View\View
+     */
     public function store(Request $request)
     {
         try{
@@ -58,7 +63,7 @@ class UserController extends Controller
             return redirect()->back()->with('success', 'Order placed successfully!');
 
         } catch (Exception $e) {
-            // Registration failed
+            // Place order failed
             $response = [
                 'message' => "Place order failed. Please try again.",
                 'error' => $e->getMessage(),
@@ -69,6 +74,12 @@ class UserController extends Controller
         
     }
 
+
+    /**
+     * Display the order details page.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showOrders()
     {
         $orders = Customer::with(['maindish', 'sidedish', 'dessert'])->get();
@@ -76,57 +87,82 @@ class UserController extends Controller
         return view('orders', compact('orders'));
     }
 
+
+    /**
+     * Display the statistics page.
+     *
+     * @return \Illuminate\View\View
+     */
     public function statistics()
     {
         $this->calculateStatistics();
         $statistics = Statistics::all();
 
+        // Get the most famouse main dish
         $mostFamousMainDishFromAllRecords = Customer::select('main_dish_id', DB::raw('count(main_dish_id) as count'))
             ->groupBy('main_dish_id')
             ->orderByDesc('count')
             ->first();
 
+        // Get the most famouse side dish
         $mostFamousSideDishFromAllRecords = Customer::select('side_dish_id', DB::raw('count(side_dish_id) as count'))
             ->groupBy('side_dish_id')
             ->orderByDesc('count')
             ->first();
 
-        // Select the side dish and the count of each side dish associated with the most consumed main dish
-        $sideDishStatistics = Customer::select('side_dish_id', DB::raw('count(*) as count'))
-            ->where('main_dish_id', $mostFamousMainDishFromAllRecords->main_dish_id)
-            ->groupBy('side_dish_id')
-            ->orderByDesc('count');
+        // Check if $mostFamousMainDishFromAllRecords is not null
+        if ($mostFamousMainDishFromAllRecords) {
+            // Select the side dish and the count of each side dish associated with the most consumed main dish
+            $sideDishStatistics = Customer::select('side_dish_id', DB::raw('count(*) as count'))
+                ->where('main_dish_id', $mostFamousMainDishFromAllRecords->main_dish_id)
+                ->groupBy('side_dish_id')
+                ->orderByDesc('count');
 
-        // Get the first (top) record for the most consumed side dish with the most consumed main dish
-        $mostConsumedSideDishWithMostConsumedSideDish = DB::table(DB::raw("({$sideDishStatistics->toSql()}) as sub"))
-            ->mergeBindings($sideDishStatistics->getQuery())
-            ->select('side_dish_id', 'count')
-            ->first();
+            // Get the first record for the most consumed side dish with the most consumed main dish
+            $mostConsumedSideDishWithMostConsumedSideDish = DB::table(DB::raw("({$sideDishStatistics->toSql()}) as sub"))
+                ->mergeBindings($sideDishStatistics->getQuery())
+                ->select('side_dish_id', 'count')
+                ->first();
 
-        // Fetch the names of the most famous main dish and side dish
-        $mostFamousMainDishName = Maindish::find($mostFamousMainDishFromAllRecords->main_dish_id)->main_dish ?? 'N/A';
-        $mostFamousSideDishName = Sidedish::find($mostFamousSideDishFromAllRecords->side_dish_id)->side_dish ?? 'N/A';
-        $mostConsumedSideDishNameWithMostConsumedMainDish = Sidedish::find($mostConsumedSideDishWithMostConsumedSideDish->side_dish_id)->side_dish ?? 'N/A';
+                $mostFamousMainDishName = Maindish::find($mostFamousMainDishFromAllRecords->main_dish_id)->main_dish ?? 'N/A';
+                $mostFamousSideDishName = Sidedish::find($mostFamousSideDishFromAllRecords->side_dish_id)->side_dish ?? 'N/A';
+                $mostConsumedSideDishNameWithMostConsumedMainDish = Sidedish::find($mostConsumedSideDishWithMostConsumedSideDish->side_dish_id)->side_dish ?? 'N/A';
+        } else {
+            $mostFamousMainDishName=null;
+            $mostFamousSideDishName=null;
+            $mostConsumedSideDishWithMostConsumedSideDish = null;
+            $mostConsumedSideDishNameWithMostConsumedMainDish=null;
+        }
 
         return view('statistics', compact('statistics', 'mostFamousMainDishName','mostFamousSideDishName','mostConsumedSideDishNameWithMostConsumedMainDish'));
         
     }
 
+
+    /**
+     * Calculate daily sales revenue
+     * Calculate most_famous_main_dish
+     * Calculate most_famous_side_dish
+     * Create table record for day
+     *
+     * @return \Illuminate\View\View
+     */
     public function calculateStatistics()
     {
-        $date = now()->toDateString(); // Change this based on your date format
+        $date = now()->toDateString();
 
-        // Check if a record already exists for the current date
         $existingRecord = Statistics::where('date', $date)->first();
 
         $dailySalesRevenue = Customer::whereDate('created_at', $date)->sum('total_price');
 
+        // Get the most famouse main dish for particular date
         $mostFamousMainDish = Customer::whereDate('created_at', $date)
             ->select('main_dish_id', DB::raw('count(main_dish_id) as count'))
             ->groupBy('main_dish_id')
             ->orderByDesc('count')
             ->first();
 
+        // Get the most famouse side dish for particular date
         $mostFamousSideDish = Customer::whereDate('created_at', $date)
             ->select('side_dish_id', DB::raw('count(side_dish_id) as count'))
             ->groupBy('side_dish_id')
@@ -134,7 +170,7 @@ class UserController extends Controller
             ->first();
 
         if ($existingRecord) {
-            // If a record exists, update it
+            // If record is available for particular date it will update
             $existingRecord->update([
                 'daily_sales_revenue' => $dailySalesRevenue,
                 'most_famous_main_dish_id' => $mostFamousMainDish->main_dish_id ?? null,
@@ -143,7 +179,8 @@ class UserController extends Controller
 
             return redirect()->route('statistics.index');
         } else {
-            // If no record exists, create a new one
+
+            // Save the record in statistic table
             Statistics::create([
                 'date' => $date,
                 'daily_sales_revenue' => $dailySalesRevenue,
